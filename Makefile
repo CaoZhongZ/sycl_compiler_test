@@ -2,6 +2,8 @@ CC=clang
 CXX=clang++
 OPT_FLAG=-g
 
+ENABLE_AOT=ats
+
 SYCL_INCLUDE_DIR=/home/caozhong/llvm/include/sycl
 LLVM_INCLUDE_DIR=/home/caozhong/llvm/include
 
@@ -14,7 +16,7 @@ SYCLFLAGS=-fsycl -fsycl-id-queries-fit-in-int -fsycl-default-sub-group-size=16 -
 SYCLLINK=-fsycl -fsycl-default-sub-group-size=16
 LINKFLAGS=-fsycl -fsycl-device-code-split=per_kernel -fsycl-max-parallel-link-jobs=4 -fsycl-targets=spir64_gen -Xsycl-target-backend=spir64_gen "-device $(ENABLE_AOT) -internal_options -ze-intel-has-buffer-offset-arg -internal_options -cl-intel-greater-than-4GB-buffer-required"
 
-.PRECIOUS : %.host.o %.bc %.footer.hpp
+.PRECIOUS : %.host.o %dev.bc %.footer.hpp
 
 %.header.hpp %.footer.hpp %.dev.bc : %.cpp
 	$(CXX) $(CXXFLAGS) $(SYCLFLAGS) $(V) -fsycl-device-only -Xclang -fsycl-int-header=$*.header.hpp -Xclang -fsycl-int-footer=$*.footer.hpp -c -o $*.dev.bc $<
