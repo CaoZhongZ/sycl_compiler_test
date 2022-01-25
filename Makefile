@@ -4,8 +4,11 @@ OPT_FLAG=-g
 
 ENABLE_AOT=ats
 
-SYCL_INCLUDE_DIR=/home/caozhong/llvm/include/sycl
-LLVM_INCLUDE_DIR=/home/caozhong/llvm/include
+SYCL_LIB=$(shell clang++ -print-file-name=libsycl.so)
+SYCL_ROOT=$(realpath $(dir $(SYCL_LIB)))
+
+SYCL_INCLUDE_DIR=$(SYCL_ROOT)/../include/sycl
+LLVM_INCLUDE_DIR=$(SYCL_ROOT)/../include
 
 # Remove the rule
 %.o : %.cpp
