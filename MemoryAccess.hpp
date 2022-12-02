@@ -124,14 +124,14 @@ namespace policies {
 template<typename data_t, typename inp_calc_t, typename out_calc_t, typename loader_t, typename storer_t, int num_outputs = 1>
 struct unroll {
 
-  data_t data;
-  int remaining;
-  inp_calc_t input_offset_calculator;
-  out_calc_t output_offset_calculator;
-  loader_t loader;
-  storer_t storer;
+  data_t& data;
+  int& remaining;
+  inp_calc_t& input_offset_calculator;
+  out_calc_t& output_offset_calculator;
+  loader_t& loader;
+  storer_t& storer;
 
-  unroll(data_t data, int remaining, inp_calc_t ic, out_calc_t oc, loader_t l, storer_t s):
+  unroll(data_t& data, int& remaining, inp_calc_t& ic, out_calc_t& oc, loader_t& l, storer_t& s):
     data(data), remaining(remaining), input_offset_calculator(ic), output_offset_calculator(oc), loader(l), storer(s) {}
 
   inline bool check_inbounds(int local_id, int item_work_elem) {
