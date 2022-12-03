@@ -2,7 +2,7 @@ CC=clang
 CXX=clang++
 OPT_FLAG=-O3
 
-ENABLE_AOT=ats
+ENABLE_AOT=pvc
 
 SYCL_LIB=$(shell clang++ -print-file-name=libsycl.so)
 SYCL_ROOT=$(realpath $(dir $(SYCL_LIB)))
