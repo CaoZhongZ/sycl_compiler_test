@@ -1,6 +1,6 @@
 CC=clang
 CXX=clang++
-OPT_FLAG=-O3
+OPT_FLAG=-g
 
 ENABLE_AOT=pvc
 

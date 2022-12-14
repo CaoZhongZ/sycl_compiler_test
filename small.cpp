@@ -40,12 +40,18 @@ struct captures {
 
 int main(int argc, char ** argv) {
   if (argc < 4) {
-    printf("Usage: small <size>, <dims>, <value> x dims"
+    printf("Usage: small <size> <dims> <value>... (dims <value>)"
         "size must be multiply of 16, dim must be smaller than %d\n", MAX_DIMS);
     return -1;
   }
   int size = std::stoi(argv[1]);
   int dims = std::stoi(argv[2]);
+
+  if (argc - 3 < dims) {
+    printf("Usage: small <size> <dims> <value>... (dims <value>)"
+        "number of <value> should be equal to dims %d\n");
+    return -1;
+  }
   auto q = currentQueue();
 
   auto* usm = sycl::malloc_device(size * sizeof(int), q);
