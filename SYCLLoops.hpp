@@ -76,7 +76,7 @@ struct unrolled_elementwise_kernel {
       int N, func_t f, array_t data, inp_calc_t ic, out_calc_t oc, loader_t l, storer_t s)
   : N(N), f(f), data(data), ic(ic), oc(oc), l(l), s(s) {}
 
-  void operator () (sycl::nd_item<1> pos) const {
+  inline void operator () (sycl::nd_item<1> pos) const {
     int remaining = N - group_work_size() * pos.get_group(0);
     auto policy = memory::policies::unroll<array_t, inp_calc_t, out_calc_t, loader_t, storer_t>(data, remaining, ic, oc, l, s);
     elementwise_kernel_helper(pos, f, policy);
