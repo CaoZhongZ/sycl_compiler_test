@@ -76,11 +76,21 @@ struct unrolled_elementwise_kernel {
       int N, func_t f, array_t data, inp_calc_t ic, out_calc_t oc, loader_t l, storer_t s)
   : N(N), f(f), data(data), ic(ic), oc(oc), l(l), s(s) {}
 
+#if defined(SYCL_BUFFER_PARAMS_WRAPPER)
+  inline static void s_entry (const unrolled_elementwise_kernel *self, sycl::nd_item<1> pos) {
+    int remaining = N - group_work_size() * pos.get_group(0);
+    auto policy = memory::policies::unroll<array_t, inp_calc_t, out_calc_t, loader_t, storer_t>(
+        self->data, remaining, self->ic, self->oc, self->l, self->s);
+    elementwise_kernel_helper(pos, self->f, policy);
+  }
+#else
   inline void operator () (sycl::nd_item<1> pos) const {
     int remaining = N - group_work_size() * pos.get_group(0);
-    auto policy = memory::policies::unroll<array_t, inp_calc_t, out_calc_t, loader_t, storer_t>(data, remaining, ic, oc, l, s);
-    elementwise_kernel_helper(pos, f, policy);
+    auto policy = memory::policies::unroll<array_t, inp_calc_t, out_calc_t, loader_t, storer_t>(
+        this->data, remaining, this->ic, this->oc, this->l, this->s);
+    elementwise_kernel_helper(pos, this->f, policy);
   }
+#endif
 
 private:
   int N;
@@ -121,12 +131,32 @@ static inline void launch_vectorized_kernel(int64_t N, const func_t& f, array_t 
     auto output_calc = TrivialOffsetCalculator<1>();
     auto loader = memory::LoadWithoutCast();
     auto storer = memory::StoreWithoutCast();
+
+    unrolled_elementwise_kernel<
+      func_t, array_t,
+      decltype(input_calc),
+      decltype(output_calc),
+      decltype(loader), decltype(storer)>
+    functor_params(N, f, data, input_calc, output_calc, loader, storer);
+
+#if defined(SYCL_BUFFER_PARAMS_WRAPPER)
+    sycl::buffer buf_params(
+      const_cast<const decltype(functor_params)*>(&functor_params),
+      sycl::range<1>(1)
+    );
+
     queue.submit([&] (sycl::handler &cgh) {
+      auto params = buf_params.get_access<sycl::access_mode::read, sycl::target::device>(cgh);
       cgh.parallel_for(sycl::nd_range<1>({grid * group_size(), group_size()}),
-        unrolled_elementwise_kernel<
-        func_t, array_t, decltype(input_calc), decltype(output_calc), decltype(loader), decltype(storer)>(
-          N, f, data, input_calc, output_calc, loader, storer));
+        [=](sycl::nd_item<1> pos) {
+          functor_params.s_entry(params.get_pointer(), pos);
+        });
     });
+#else
+    queue.submit([&] (sycl::handler &cgh) {
+      cgh.parallel_for(sycl::nd_range<1>({grid * group_size(), group_size()}), functor_params);
+    });
+#endif
     // C10_CUDA_KERNEL_LAUNCH_CHECK();
     break;
   }
@@ -275,10 +305,26 @@ static inline void launch_unrolled_kernel(int64_t N, const func_t& f, array_t da
   assert(N > 0 && N <= std::numeric_limits<int32_t>::max());
   int64_t grid = (N + group_work_size() - 1) / group_work_size();
   auto queue = currentQueue();
+
+  unrolled_elementwise_kernel<
+    func_t, array_t, inp_calc_t, out_calc_t, loader_t, storer_t>
+  functor_params(N, f, data, ic, oc, l, s);
+
+#if defined(SYCL_BUFFER_PARAMS_WRAPPER)
+  sycl::buffer buf_params(const_cast<const decltype(functor_params) *>(functor_params), sycl::range<1>(1));
   queue.submit([&](sycl::handler &cgh) {
-    cgh.parallel_for(sycl::nd_range<1>({grid * group_size(), group_size()}),
-      unrolled_elementwise_kernel<func_t, array_t, inp_calc_t, out_calc_t, loader_t, storer_t>(N, f, data, ic, oc, l, s));
+    auto params = buf_params.get_access<sycl::access_mode::read, sycl::target::device>(cgh);
+    cgh.parallel_for(
+      sycl::nd_range<1>({grid * group_size(), group_size()}),
+      [=](sycl::nd_item<1> pos) {
+        functor_params.s_entry(params.get_pointer(), pos);
+      });
   });
+#else
+  queue.submit([&](sycl::handler &cgh) {
+    cgh.parallel_for(sycl::nd_range<1>({grid * group_size(), group_size()}), functor_params);
+  });
+#endif
   // C10_CUDA_KERNEL_LAUNCH_CHECK();
 }
 
