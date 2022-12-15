@@ -1,6 +1,6 @@
 CC=clang
 CXX=clang++
-OPT_FLAG=-g
+OPT_FLAG= -g
 
 ENABLE_AOT=pvc
 
@@ -14,7 +14,7 @@ LLVM_INCLUDE_DIR=$(SYCL_ROOT)/../include
 %.o : %.cpp
 
 V=-v
-CXXFLAGS=-std=c++17 $(OPT_FLAG) -Wall -Wno-deprecated-declarations
+CXXFLAGS=-std=c++17 $(OPT_FLAG) -Wall -Wno-deprecated-declarations -Wno-unused-variable -DSYCL_BUFFER_PARAMS_WRAPPER
 SYCLFLAGS=-fsycl -fsycl-id-queries-fit-in-int -fsycl-default-sub-group-size=16 -D__SYCL_INTERNAL_API -fsycl-targets=spir64_gen
 SYCLLINK=-fsycl -fsycl-default-sub-group-size=16
 LINKFLAGS=-fsycl -fsycl-device-code-split=per_kernel -fsycl-max-parallel-link-jobs=4 -fsycl-targets=spir64_gen -Xsycl-target-backend=spir64_gen "-device $(ENABLE_AOT) -internal_options -ze-intel-has-buffer-offset-arg -internal_options -cl-intel-greater-than-4GB-buffer-required"
