@@ -47,7 +47,7 @@ int main(int argc, char ** argv) {
 
   auto grid = size / group_size;
 
-  auto buffer_params = sycl::buffer<captures>(&parameters, sycl::range<1>(1));
+  auto buffer_params = sycl::buffer(const_cast<const captures *>(&parameters), sycl::range<1>(1));
 
   auto e = q.submit([&] (sycl::handler &cgh) {
     auto params = buffer_params.get_access<sycl::access_mode::read, sycl::target::device>(cgh);
