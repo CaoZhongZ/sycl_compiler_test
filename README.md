@@ -7,5 +7,7 @@ Notes:
 
 ## Build
 type ```make main``` for compiling whole PyTorch template porting
+
 type ```make small``` for compiling small.cpp
+
 type ```make accessor``` for compiling workaround
