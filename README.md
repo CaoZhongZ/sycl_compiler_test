@@ -6,4 +6,6 @@ Notes:
 3. Kernel access member for calculating tensor array strides and dimension edges
 
 ## Build
-type ```make main```
+type ```make main``` for compiling whole PyTorch template porting
+type ```make small``` for compiling small.cpp
+type ```make accessor``` for compiling workaround

@@ -322,7 +322,10 @@ static inline void launch_unrolled_kernel(int64_t N, const func_t& f, array_t da
   });
 #else
   queue.submit([&](sycl::handler &cgh) {
-    cgh.parallel_for(sycl::nd_range<1>({grid * group_size(), group_size()}), functor_params);
+    cgh.parallel_for(
+      sycl::nd_range<1>({grid * group_size(), group_size()}),
+      functor_params
+    );
   });
 #endif
   // C10_CUDA_KERNEL_LAUNCH_CHECK();

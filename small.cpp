@@ -56,16 +56,16 @@ int main(int argc, char ** argv) {
 
   auto* usm = sycl::malloc_device(size * sizeof(int), q);
 
-  auto func = captures(dims, (int *)usm);
+  auto captured = captures(dims, (int *)usm);
 
   for (int i = 0; i < dims; ++ i) {
-    func.table[i] = std::stoi(argv[3+i]);
+    captured.table[i] = std::stoi(argv[3+i]);
   }
 
   auto grid = size / group_size;
 
   auto e = q.submit([&] (sycl::handler &cgh) {
-    cgh.parallel_for(sycl::nd_range<1>({grid * group_size, group_size}), func);
+    cgh.parallel_for(sycl::nd_range<1>({grid * group_size, group_size}), captured);
   });
 
   e.wait();
