@@ -16,9 +16,9 @@ LLVM_INCLUDE_DIR=$(SYCL_ROOT)/../include
 # default to SYCL
 BACKEND?=SYCL
 
-ifeq($(BACKEND),CUDA)
+ifeq ($(BACKEND),CUDA)
 TARGET=nvptx64-nvidia-cuda
-LINKTARGET=-Xsycl-target-backend=nvptx64-nvidia-cuda '--cuda-gpu-arch=sm86'
+LINKTARGET=-Xsycl-target-backend=nvptx64-nvidia-cuda '--cuda-gpu-arch=sm_86'
 OFFLOAD=sycl-nvptx64-nvidia-cuda
 else
 TARGET=spir64_gen
