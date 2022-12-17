@@ -1,0 +1,16 @@
+CC=clang
+CXX=clang++
+OPT_FLAG=-O3 -v
+
+# KERFLAGS=-fsycl-device-code-split=per_kernel -fsycl-max-parallel-link-jobs=4 \
+				 -fsycl-id-queries-fit-in-int -fsycl-default-sub-group-size=16
+
+ARCHFLAGS=-fsycl-targets=nvptx64-nvidia-cuda
+ARCHLINKS=-Xsycl-target-backend=nvptx64-nvidia-cuda '--cuda-gpu-arch=sm_50'
+# ARCHFLAGS=-fsycl-targets=spir64_gen -Xsycl-target-backend=spir64_gen "-device $(ENABLE_AOT) -internal_options -ze-intel-has-buffer-offset-arg -internal_options -cl-intel-greater-than-4GB-buffer-required"
+CXXFLAGS=-fsycl -std=c++17 $(OPT_FLAG) $(KERFLAGS) -D__SYCL_INTERNAL_API $(ARCHFLAGS) $(ARCHLINKS)
+
+all : main accessor small
+
+clean :
+	rm -f main

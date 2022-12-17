@@ -49,7 +49,7 @@ int main(int argc, char ** argv) {
 
   if (argc - 3 < dims) {
     printf("Usage: small <size> <dims> <value>... (dims <value>)"
-        "number of <value> should be equal to dims %d\n");
+        "number of <value> should be equal to dims\n");
     return -1;
   }
   auto q = currentQueue();
