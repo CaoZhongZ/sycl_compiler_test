@@ -13,11 +13,23 @@ LLVM_INCLUDE_DIR=$(SYCL_ROOT)/../include
 # Remove the rule
 %.o : %.cpp
 
+# default to SYCL
+BACKEND?=SYCL
+
+ifeq($(BACKEND),CUDA)
+TARGET=nvptx64-nvidia-cuda
+LINKTARGET=-Xsycl-target-backend=nvptx64-nvidia-cuda '--cuda-gpu-arch=sm86'
+OFFLOAD=sycl-nvptx64-nvidia-cuda
+else
+TARGET=spir64_gen
+LINKTARGET=-Xsycl-target-backend=spir64_gen "-device $(ENABLE_AOT) -internal_options -ze-intel-has-buffer-offset-arg -internal_options -cl-intel-greater-than-4GB-buffer-required"
+OFFLOAD=sycl-spir64_gen-unknown-unknown
+endif
+
 V=-v
 CXXFLAGS=-std=c++17 $(OPT_FLAG) -Wall -Wno-deprecated-declarations -Wno-unused-variable -DSYCL_BUFFER_PARAMS_WRAPPER
-SYCLFLAGS=-fsycl -fsycl-id-queries-fit-in-int -fsycl-default-sub-group-size=16 -D__SYCL_INTERNAL_API -fsycl-targets=spir64_gen
-SYCLLINK=-fsycl -fsycl-default-sub-group-size=16
-LINKFLAGS=-fsycl -fsycl-device-code-split=per_kernel -fsycl-max-parallel-link-jobs=4 -fsycl-targets=spir64_gen -Xsycl-target-backend=spir64_gen "-device $(ENABLE_AOT) -internal_options -ze-intel-has-buffer-offset-arg -internal_options -cl-intel-greater-than-4GB-buffer-required"
+SYCLFLAGS=-fsycl -fsycl-id-queries-fit-in-int -fsycl-default-sub-group-size=16 -D__SYCL_INTERNAL_API -fsycl-targets=$(TARGET)
+LINKFLAGS=-fsycl -fsycl-max-parallel-link-jobs=8 -fsycl-targets=$(TARGET) $(LINKTARGET)
 
 .PRECIOUS : %.host.o %.dev.bc %.footer.hpp
 
@@ -28,7 +40,7 @@ LINKFLAGS=-fsycl -fsycl-device-code-split=per_kernel -fsycl-max-parallel-link-jo
 	$(CXX) $(CXXFLAGS) $(V) -Xclang -fsycl-is-host -D__SYCL_UNNAMED_LAMBDA__ -I$(SYCL_INCLUDE_DIR) -I$(LLVM_INCLUDE_DIR) -c -o $@ -include $^
 
 %.o : %.dev.bc %.host.o
-	clang-offload-bundler -type=o -targets=sycl-spir64_gen-unknown-unknown,host-x86_64-unknown-linux-gnu -outputs=$@ -inputs=$*.dev.bc,$*.host.o
+	clang-offload-bundler -type=o -targets=$(OFFLOAD),host-x86_64-unknown-linux-gnu -outputs=$@ -inputs=$*.dev.bc,$*.host.o
 
 main : main.o
 	$(CXX) $(V) $(LINKFLAGS) -o$@ $^
