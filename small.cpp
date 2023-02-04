@@ -11,7 +11,7 @@
 #include "runtime.hpp"
 
 static constexpr int group_size = 16;
-#define MAX_DIMS 16
+#define MAX_DIMS 32
 
 struct captures {
   void operator () (sycl::nd_item<1> pos) const {
