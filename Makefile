@@ -1,6 +1,6 @@
 CC=clang
 CXX=clang++
-OPT_FLAGS=-O3
+OPT_FLAGS=-O3 -fdenormal-fp-math=preserve-sign
 
 ENABLE_AOT=pvc
 
@@ -40,7 +40,7 @@ LINKFLAGS=$(OPT_FLAGS) -fsycl -fsycl-max-parallel-link-jobs=8 -fsycl-targets=$(T
 	$(CXX) $(CXXFLAGS) $(V) -Xclang -fsycl-is-host -D__SYCL_UNNAMED_LAMBDA__ -I$(SYCL_INCLUDE_DIR) -I$(LLVM_INCLUDE_DIR) -c -o $@ -include $^
 
 %.o : %.dev.bc %.host.o
-	clang-offload-bundler -type=o -targets=$(OFFLOAD),host-x86_64-unknown-linux-gnu -outputs=$@ -inputs=$*.dev.bc,$*.host.o
+	clang-offload-bundler -type=o -targets=$(OFFLOAD),host-x86_64-unknown-linux-gnu -output=$@ -input=$*.dev.bc,$*.host.o
 
 main : main.o
 	$(CXX) $(V) $(LINKFLAGS) -o$@ $^
