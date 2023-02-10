@@ -1,0 +1,1 @@
+/usr/bin/ocloc -output ./bundle/small-470413.out -file ./bundle/small-b0f52b-7960a0.spv -output_no_suffix -spirv_input -device pvc -internal_options -ze-intel-has-buffer-offset-arg -internal_options -cl-intel-greater-than-4GB-buffer-required
