@@ -146,10 +146,10 @@ static inline void launch_vectorized_kernel(int64_t N, const func_t& f, array_t 
     );
 
     queue.submit([&] (sycl::handler &cgh) {
-      auto params = buf_params.template get_access<sycl::access_mode::read, sycl::target::device>(cgh);
+      auto params = buf_params.template get_access<sycl::access_mode::read, sycl::target::constant>(cgh);
       cgh.parallel_for(sycl::nd_range<1>({grid * group_size(), group_size()}),
         [=](sycl::nd_item<1> pos) {
-          functor_params.s_entry(params.get_pointer(), pos);
+          params[0](pos);
         });
     });
 #else

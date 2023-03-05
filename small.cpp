@@ -63,9 +63,19 @@ int main(int argc, char ** argv) {
   }
 
   auto grid = size / group_size;
+  sycl::buffer params(const_cast<const decltype(captured) *>(&captured), sycl::range<1>(1));
 
   auto e = q.submit([&] (sycl::handler &cgh) {
+#if defined(SYCL_BUFFER_PARAMS_WRAPPER)
+    auto device_captured = params.template get_access<sycl::access_mode::read, sycl::target::constant>(cgh);
+
+    cgh.parallel_for(sycl::nd_range<1>({grid * group_size, group_size}),
+      [=] (sycl::nd_item<1> pos) {
+        device_captured[0](pos);
+      });
+#else
     cgh.parallel_for(sycl::nd_range<1>({grid * group_size, group_size}), captured);
+#endif
   });
 
   e.wait();
