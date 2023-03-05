@@ -67,7 +67,7 @@ int main(int argc, char ** argv) {
 
   auto e = q.submit([&] (sycl::handler &cgh) {
 #if defined(SYCL_BUFFER_PARAMS_WRAPPER)
-    auto device_captured = params.template get_access<sycl::access_mode::read, sycl::target::constant>(cgh);
+    auto device_captured = params.template get_access<sycl::access_mode::read, sycl::target::constant_buffer>(cgh);
 
     cgh.parallel_for(sycl::nd_range<1>({grid * group_size, group_size}),
       [=] (sycl::nd_item<1> pos) {
