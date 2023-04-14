@@ -35,6 +35,11 @@ void test_softmax(int batch, int heads, int num_seq, int soft_seq) {
 
   q.memcpy(host_m, vals, size);
   q.wait();
+
+  sycl::free(vals, q);
+  sycl::free(mask, q);
+  sycl::free(alibi, q);
+  sycl::free(host_m, q);
 }
 
 int main(int argc, char ** argv) {
