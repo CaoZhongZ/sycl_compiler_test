@@ -14,16 +14,17 @@
 static constexpr int group_size = 16;
 #define MAX_DIMS 32
 
-void test_float(int batch, int heads, int num_seq, int soft_seq) {
+template <typename T>
+void test_softmax(int batch, int heads, int num_seq, int soft_seq) {
   auto q = currentQueue();
 
   auto elem = batch * heads * num_seq * soft_seq;
-  auto size = elem * sizeof(float);
+  auto size = elem * sizeof(T);
 
-  float* vals = (float *)sycl::malloc_device(size, q);
-  float* mask = (float *)sycl::malloc_device(size, q);
-  float* alibi = (float *)sycl::malloc_device(size, q);
-  float* host_m = (float *)sycl::malloc_host(size, q);
+  T* vals = (T *)sycl::malloc_device(size, q);
+  T* mask = (T *)sycl::malloc_device(size, q);
+  T* alibi = (T *)sycl::malloc_device(size, q);
+  T* host_m = (T *)sycl::malloc_host(size, q);
 
   q.memset(vals, 1.0, size);
   q.memset(mask, 0.0, size);
@@ -46,7 +47,7 @@ int main(int argc, char ** argv) {
   int num_seq = std::stoi(argv[3]);
   int soft_seq = std::stoi(argv[4]);
 
-  test_float(batch_size, heads, num_seq, soft_seq);
+  test_softmax<sycl::half>(batch_size, heads, num_seq, soft_seq);
 
   return 0;
 }
