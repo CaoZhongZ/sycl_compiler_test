@@ -9,6 +9,7 @@
 #include <time.h>
 
 #include "../runtime.hpp"
+#include "softmax.hpp"
 
 static constexpr int group_size = 16;
 #define MAX_DIMS 32
@@ -16,21 +17,22 @@ static constexpr int group_size = 16;
 void test_float(int batch, int heads, int num_seq, int soft_seq) {
   auto q = currentQueue();
 
-  auto size = batch * heads * num_seq * soft_seq;
+  auto elem = batch * heads * num_seq * soft_seq;
+  auto size = elem * sizeof(float);
 
-  float* vals = sycl::malloc_device(size * sizeof(float), q);
-  float* mask = sycl::malloc_device(size * sizeof(float), q);
-  float* alibi = sycl::malloc_device(size * sizeof(float), q);
-  float* host_m = sycl::malloc_host(size * sizeof(float), q);
+  float* vals = (float *)sycl::malloc_device(size, q);
+  float* mask = (float *)sycl::malloc_device(size, q);
+  float* alibi = (float *)sycl::malloc_device(size, q);
+  float* host_m = (float *)sycl::malloc_host(size, q);
 
-  q.memset(val, 1.0);
-  q.memset(mask, 0.0);
-  q.memset(alibi, 0.0);
+  q.memset(vals, 1.0, size);
+  q.memset(mask, 0.0, size);
+  q.memset(alibi, 0.0, size);
 
   launch_attn_softmax_v2(vals, mask, alibi, 1.0, true,
       false, false, 1, batch, heads, num_seq, soft_seq, 0, 0, 1, q);
 
-  q.memcpy(host_m, vals, size * sizeof(float));
+  q.memcpy(host_m, vals, size);
   q.wait();
 }
 

@@ -8,7 +8,6 @@ Copyright 2022 The Microsoft DeepSpeed Team
 #include <sycl/half_type.hpp>
 
 #include "compatible.h"
-#include <ext/oneapi/experimental/bfloat16.hpp>
 
 namespace conversion {
 
@@ -254,8 +253,8 @@ template <>
 inline float2 to(sycl::ushort2 val)
 {
     float2 tmp;
-    tmp[0] = bf16::to_float(val[0]);
-    tmp[1] = bf16::to_float(val[1]);
+    tmp[0] = (float)val[0];
+    tmp[1] = (float)val[1];
     return tmp;
 }
 
@@ -265,8 +264,8 @@ template <>
 inline float2 to(bf162 val)
 {
     float2 tmp;
-    tmp[0] = bf16::to_float(val[0]);
-    tmp[1] = bf16::to_float(val[1]);
+    tmp[0] = (float)val[0];
+    tmp[1] = (float)val[1];
     return tmp;
 }
 #endif
@@ -416,8 +415,8 @@ template <>
 inline sycl::ushort2 to(float2 val)
 {
     sycl::ushort2 tmp;
-    tmp[0] = bf16::from_float(val[0]);
-    tmp[1] = bf16::from_float(val[1]);
+    tmp[0] = val[0];
+    tmp[1] = val[1];
     return tmp;
 }
 
@@ -426,8 +425,8 @@ template <>
 inline bf162 to(float2 val)
 {
     bf162 tmp;
-    tmp[0] = bf16::from_float(val[0]);
-    tmp[1] = bf16::from_float(val[1]);
+    tmp[0] = val[0];
+    tmp[1] = val[1];
     return tmp;
 }
 template <>

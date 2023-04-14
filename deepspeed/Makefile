@@ -28,7 +28,7 @@ endif
 
 V=-v
 CXXFLAGS=-std=c++17 $(OPT_FLAGS) -Wall -Wno-deprecated-declarations -Wno-unused-variable
-SYCLFLAGS=-fsycl -fsycl-id-queries-fit-in-int -fsycl-default-sub-group-size=16 -D__SYCL_INTERNAL_API -fsycl-targets=$(TARGET)
+SYCLFLAGS=-fsycl -fsycl-id-queries-fit-in-int -fsycl-default-sub-group-size=32 -D__SYCL_INTERNAL_API -fsycl-targets=$(TARGET)
 LINKFLAGS=$(OPT_FLAGS) -fsycl -fsycl-max-parallel-link-jobs=8 -fsycl-targets=$(TARGET) $(LINKTARGET)
 
 .PRECIOUS : %.host.o %.dev.bc %.footer.hpp
@@ -45,6 +45,7 @@ LINKFLAGS=$(OPT_FLAGS) -fsycl -fsycl-max-parallel-link-jobs=8 -fsycl-targets=$(T
 	-clang-offload-bundler -type=o -targets=$(OFFLOAD),host-x86_64-unknown-linux-gnu -output=$@ -inputs=$*.dev.bc,$*.host.o
 
 main : softmax.o main.o
+	$(CXX) $(V) $(LINKFLAGS) -o$@ $^
 
 all : main
 

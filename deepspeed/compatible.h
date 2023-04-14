@@ -9,7 +9,6 @@ using namespace cl::sycl;
 #else
 #error "Unsupported compiler"
 #endif
-#include <ext/oneapi/experimental/bfloat16.hpp>
 
 #define __global__
 #define __device__
@@ -20,7 +19,7 @@ using namespace cl::sycl;
 constexpr int hw_warp_size = 32;
 constexpr int warpSize = 32;
 
-using bf16 = sycl::ext::oneapi::experimental::bfloat16;
+using bf16 = sycl::ext::oneapi::bfloat16;
 
 using float4 = sycl::vec<float, 4>;
 using float2 = sycl::vec<float, 2>;
