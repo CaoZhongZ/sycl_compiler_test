@@ -10,17 +10,16 @@ Copyright 2022 The Microsoft DeepSpeed Team
 
 #if __has_include(<sycl/sycl.hpp>)
 #include <sycl/sycl.hpp>
-using namespace sycl;
 #elif __has_include(<CL/sycl.hpp>)
 #include <CL/sycl.hpp>
-using namespace cl::sycl;
+using namespace cl;
 #else
 #error "Unsupported compiler"
 #endif
 
 #include "compatible.h"
 #include "conversion_utils.h"
-#include "inference_sycl_layers.h"
+#include "softmax.hpp"
 
 #define MAX_REG_SIZE 8
 #define minus_infinity -10000.0

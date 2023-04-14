@@ -44,23 +44,9 @@ LINKFLAGS=$(OPT_FLAGS) -fsycl -fsycl-max-parallel-link-jobs=8 -fsycl-targets=$(T
 	-clang-offload-bundler -type=o -targets=$(OFFLOAD),host-x86_64-unknown-linux-gnu -output=$@ -input=$*.dev.bc,$*.host.o
 	-clang-offload-bundler -type=o -targets=$(OFFLOAD),host-x86_64-unknown-linux-gnu -output=$@ -inputs=$*.dev.bc,$*.host.o
 
+main : softmax.o main.o
 
-main : main.o
-	$(CXX) $(V) $(LINKFLAGS) -o$@ $^
-
-small : small.o
-	$(CXX) $(V) $(LINKFLAGS) -o$@ $^
-
-accessor : accessor.o
-	$(CXX) $(V) $(LINKFLAGS) -o$@ $^
-
-all : main small accessor
-
-onepass.o : main.cpp
-	$(CXX) $(V) $(SYCLFLAGS) -c -o $@ $<
-
-onepass : onepass.o
-	$(CXX) $(V) $(LINKFLAGS) -o $@ $<
+all : main
 
 clean :
-	rm -f small main accessor *.o *.header.hpp *.footer.hpp *.bc onepass
+	rm -f main *.o *.header.hpp *.footer.hpp *.bc
