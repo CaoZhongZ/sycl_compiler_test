@@ -50,7 +50,6 @@ std::enable_if_t<std::is_trivially_destructible<T>::value &&
   __attribute__((opencl_local)) std::uint8_t *AllocatedMem =
       __sycl_allocateLocalMemory(sizeof(T), alignof(T));
 
-  // TODO switch to using group::get_local_linear_id here once it's implemented
   if constexpr (!std::is_trivial_v<T>) {
     id<3> Id = __spirv::initLocalInvocationId<3, id<3>>();
     if (Id == id<3>(0, 0, 0))
