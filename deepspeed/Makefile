@@ -50,4 +50,4 @@ main : softmax.o main.o
 all : main
 
 clean :
-	rm -f main *.o *.header.hpp *.footer.hpp *.bc
+	rm -f main *.o *.header.hpp *.footer.hpp *.bc *.ll *.asm *.cos *.dbg *.elf *.isa *.visaasm *.dat *.kernbin *.spv *.spvasm *.progbin *.txt

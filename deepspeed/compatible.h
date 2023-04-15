@@ -51,10 +51,12 @@ std::enable_if_t<std::is_trivially_destructible<T>::value &&
       __sycl_allocateLocalMemory(sizeof(T), alignof(T));
 
   // TODO switch to using group::get_local_linear_id here once it's implemented
-  id<3> Id = __spirv::initLocalInvocationId<3, id<3>>();
-  if (Id == id<3>(0, 0, 0))
-    new (AllocatedMem) T(std::forward<Args>(args)...);
-  sycl::detail::workGroupBarrier();
+  if constexpr (!std::is_trivial_v<T>) {
+    id<3> Id = __spirv::initLocalInvocationId<3, id<3>>();
+    if (Id == id<3>(0, 0, 0))
+      new (AllocatedMem) T(std::forward<Args>(args)...);
+    sycl::detail::workGroupBarrier();
+  }
   return reinterpret_cast<
       __attribute__((opencl_local)) typename std::remove_extent<T>::type *>(AllocatedMem);
 #else
