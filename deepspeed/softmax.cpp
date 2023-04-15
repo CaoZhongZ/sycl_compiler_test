@@ -84,7 +84,7 @@ public:
     /* auto partialSum =
      * local_ptr<float>(local_ptr<void>(sycl::ext::oneapi::group_local_memory<float[MAX_WARP_NUM]>(b).get()));
      */
-    local_ptr<float> partialSum = __group_local_memory<float[MAX_WARP_NUM]>(b);
+    auto partialSum = __group_local_memory<float[MAX_WARP_NUM]>(b);
 
     int iter_offset =
         pos.get_group(0) * (warp_num / reduce_blocks) + (wid / reduce_blocks);
@@ -354,8 +354,7 @@ public:
     int seq_lane = tid % reduceWidth;
 
     /* __shared__ float partialSum[MAX_WARP_NUM]; */
-    auto partialSum = local_ptr<float>(local_ptr<void>(
-        sycl::ext::oneapi::group_local_memory<float[MAX_WARP_NUM]>(b).get()));
+    auto partialSum = __group_local_memory<float[MAX_WARP_NUM]>(b);
 
     int iter_offset =
         pos.get_group(0) * (warp_num / reduce_blocks) + (wid / reduce_blocks);
