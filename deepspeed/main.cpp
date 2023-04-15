@@ -72,6 +72,7 @@ int main(int argc, char ** argv) {
   sycl::half converted_f_standard = conversion::to<sycl::half>(f_standard);
 
   test_softmax<sycl::half>(batch_size, heads, num_seq, soft_seq);
+  test_softmax<bf16>(batch_size, heads, num_seq, soft_seq);
 
   return 0;
 }
