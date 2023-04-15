@@ -1,6 +1,6 @@
 CC=clang
 CXX=clang++
-OPT_FLAGS=-g -ffast-math
+OPT_FLAGS=-g -gdwarf-4 -ffast-math
 
 ENABLE_AOT=pvc
 
