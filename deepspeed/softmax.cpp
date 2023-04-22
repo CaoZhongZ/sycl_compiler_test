@@ -59,14 +59,14 @@ public:
         head_offset(head_offset), mask_stride(mask_stride), mp_size(mp_size),
         iterations(iterations), reduceWidth(reduceWidth){};
 
-  void operator() [[sycl::reqd_sub_group_size(WARP_SIZE)]] (sycl::nd_item<1> pos) const {
+  void operator() [[sycl::reqd_sub_group_size(WARP_SIZE)]] (sycl::nd_item<1>) const {
     /* cg::thread_block b = cg::this_thread_block(); */
     /* cg::thread_block_tile<WARP_SIZE> g = cg::tiled_partition<WARP_SIZE>(b);
      */
 
     auto b = sycl::ext::oneapi::experimental::this_group<1>();
     auto g = sycl::ext::oneapi::this_sub_group();
-    /* auto pos = sycl::ext::oneapi::experimental::this_nd_item<1>(); */
+    auto pos = sycl::ext::oneapi::experimental::this_nd_item<1>();
 
     float2 low_data[MAX_REG_SIZE];
     float2 high_data[MAX_REG_SIZE];
@@ -333,7 +333,7 @@ public:
       num_seq(num_seq), head_offset(head_offset), mask_stride(mask_stride),
       mp_size(mp_size), iterations(iterations), reduceWidth(reduceWidth){};
 
-  void operator()(sycl::nd_item<1> pos) const {
+  void operator() [[sycl::reqd_sub_group_size(WARP_SIZE)]] (sycl::nd_item<1>) const {
 
     /* cg::thread_block b = cg::this_thread_block(); */
     /* cg::thread_block_tile<WARP_SIZE> g = cg::tiled_partition<WARP_SIZE>(b);
@@ -341,7 +341,7 @@ public:
 
     auto b = sycl::ext::oneapi::experimental::this_group<1>();
     auto g = sycl::ext::oneapi::this_sub_group();
-    /* auto pos = sycl::ext::oneapi::experimental::this_nd_item<1>(); */
+    auto pos = sycl::ext::oneapi::experimental::this_nd_item<1>();
 
     float4 data[MAX_REG_SIZE];
 
