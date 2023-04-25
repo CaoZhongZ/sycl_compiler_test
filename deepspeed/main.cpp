@@ -11,9 +11,16 @@
 #include "../runtime.hpp"
 #include "conversion_utils.h"
 #include "softmax.hpp"
+#include "layer_norm.hpp"
 
 static constexpr int group_size = 16;
 #define MAX_DIMS 32
+
+template <typename T> void fill_array(T* array, T c, size_t n_elem) {
+  for (size_t i = 0; i < n_elem; ++ i) {
+    array[i] = c;
+  }
+}
 
 template <typename T>
 void test_softmax(int batch, int heads, int num_seq, int soft_seq) {
@@ -28,9 +35,7 @@ void test_softmax(int batch, int heads, int num_seq, int soft_seq) {
   T* host_in = (T *)sycl::malloc_host(size, q);
   T* host_o = (T *)sycl::malloc_host(size, q);
 
-  for (size_t i = 0; i < elem; ++ i) {
-    host_in[i] = T(1.0);
-  }
+  fill_array<T>(host_in, T(1.0), elem);
 
   q.memcpy(vals, host_in, size);
   q.memset(mask, T(0.0), size);
@@ -66,9 +71,7 @@ void test_layernorm(int rows, int elems_per_row) {
   auto* host_in = (T *)sycl::malloc_host(size, q);
   auto* host_o = (T *)sycl::malloc_host(size, q);
 
-  for (size_t i = 0; i < elem; ++ i) {
-    host_in[i] = T(1.0);
-  }
+  fill_array<T>(host_in, T(1.0), elem);
 
   q.memcpy(vals, host_in, size);
   q.memset(gamma, T(1.0), row_sz);
@@ -76,7 +79,7 @@ void test_layernorm(int rows, int elems_per_row) {
 
   launch_fused_ln(output, vals, gamma, beta, 0.00001, rows, elems_per_row, q);
 
-  q.memcpy(host_o, vals, size);
+  q.memcpy(host_o, output, size);
   q.wait();
 
   sycl::free(vals, q);
@@ -110,7 +113,7 @@ int main(int argc, char ** argv) {
   float f_standard = 1.0;
   sycl::half converted_f_standard = conversion::to<sycl::half>(f_standard);
 
-  test_layernorm(batch_size, heads);
+  test_layernorm<sycl::half>(128, 1024);
   // test_softmax<sycl::half>(batch_size, heads, num_seq, soft_seq);
   // test_softmax<bf16>(batch_size, heads, num_seq, soft_seq);
 

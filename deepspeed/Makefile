@@ -44,7 +44,7 @@ LINKFLAGS=$(OPT_FLAGS) -fsycl -fsycl-max-parallel-link-jobs=8 -fsycl-targets=$(T
 	-clang-offload-bundler -type=o -targets=$(OFFLOAD),host-x86_64-unknown-linux-gnu -output=$@ -input=$*.dev.bc,$*.host.o
 	-clang-offload-bundler -type=o -targets=$(OFFLOAD),host-x86_64-unknown-linux-gnu -output=$@ -inputs=$*.dev.bc,$*.host.o
 
-main : softmax.o main.o
+main : layer_norm.o softmax.o main.o
 	$(CXX) $(V) $(LINKFLAGS) -o$@ $^
 
 all : main
