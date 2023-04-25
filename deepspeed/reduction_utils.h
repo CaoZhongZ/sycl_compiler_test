@@ -210,43 +210,51 @@ float init<ROpType::Max>()
 template <>
 sycl::half init<ROpType::Add>()
 {
-    constexpr sycl::half zero = {0x0000};
-    return sycl::half(zero);
+    return 0.;
 }
 
 template <>
 sycl::half init<ROpType::Min>()
 {
-    constexpr sycl::half inf = {0x7C00};
+    constexpr sycl::half inf = sycl::bit_cast<sycl::half>(0x7C00);
     return sycl::half(inf);
 }
 
 template <>
 sycl::half init<ROpType::Max>()
 {
-    constexpr sycl::half neg_inf = {0xFC00};
+    constexpr sycl::half neg_inf = sycl::bit_cast<sycl::half>(0xFC00);
     return sycl::half(neg_inf);
 }
 
 template <>
 sycl::half2 init<ROpType::Add>()
 {
-    /* constexpr sycl::half2 zero = {0x0000, 0x0000}; */
-    return {0x0000, 0x0000};
+    constexpr sycl::half2 zeros = {
+      sycl::bit_cast<sycl::half>(0x0000),
+      sycl::bit_cast<sycl::half>(0x0000)
+    };
+    return zeros;
 }
 
 template <>
 sycl::half2 init<ROpType::Min>()
 {
-    /* constexpr sycl::half2 inf = {0x7C00, 0x7C00}; */
-    return {0x7C00, 0x7C00};
+    constexpr sycl::half2 inf = {
+      sycl::bit_cast<sycl::half>(0x7C00),
+      sycl::bit_cast<sycl::half>(0x7C00)
+    };
+    return inf;
 }
 
 template <>
 sycl::half2 init<ROpType::Max>()
 {
-    /* constexpr sycl::half2 neg_inf = {0xFC00, 0xFC00}; */
-    return {0xFC00, 0xFC00};
+    constexpr sycl::half2 neg_inf = {
+      sycl::bit_cast<sycl::half>(0xFC00),
+      sycl::bit_cast<sycl::half>(0xFC00)
+    };
+    return neg_inf;
 }
 
 template <ROpType Op, typename T>
