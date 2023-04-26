@@ -22,6 +22,13 @@ template <typename T> void fill_array(T* array, T c, size_t n_elem) {
   }
 }
 
+template <typename T> void fill_acc(T* array, T c, size_t n_elem) {
+  for (size_t i = 0; i < n_elem; ++ i) {
+    array[i] = c+i;
+  }
+}
+
+
 template <typename T>
 void test_softmax(int batch, int heads, int num_seq, int soft_seq) {
   auto q = currentQueue();
@@ -71,7 +78,9 @@ void test_layernorm(int rows, int elems_per_row) {
   auto* host_in = (T *)sycl::malloc_host(size, q);
   auto* host_o = (T *)sycl::malloc_host(size, q);
 
-  fill_array<T>(host_in, T(1.0), elem);
+  fill_acc<T>(host_in, T(0.0), elem);
+
+  std::cout<<host_in[512]<<','<<host_in[1024]<<std::endl;
 
   q.memcpy(vals, host_in, size);
   q.memset(gamma, T(1.0), row_sz);

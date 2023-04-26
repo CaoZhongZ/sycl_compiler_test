@@ -34,12 +34,13 @@ class fused_ln {
   const T *beta;
   float epsilon;
   int elems_per_row;
+  sycl::stream out;
 
 public:
   fused_ln(T *output, const T *vals, const T *gamma, const T *beta,
-           float epsilon, int elems_per_row)
+           float epsilon, int elems_per_row, sycl::stream out)
       : output(output), vals(vals), gamma(gamma), beta(beta), epsilon(epsilon),
-        elems_per_row(elems_per_row){};
+        elems_per_row(elems_per_row), out(out) {};
 
   void operator()(sycl::nd_item<2> pos) const {
     constexpr int T_per_load = ln::granularity / sizeof(T);
@@ -83,6 +84,9 @@ public:
 
       mem_access::load_global<ln::granularity>(
           iteration_buffer, input_base + i * stride, thread_offset + i * stride < elems_per_row);
+
+      if (pos.get_local_id(1) == 0)
+        out<<'['<<pos.get_group_linear_id()<<"]:\t"<<iteration_buffer[0]<<'\t';
 
 #pragma unroll (unRoll)
       for (int j = 0; j < T_per_load; j++) {
@@ -151,11 +155,21 @@ public:
 //     fused_ln<T, unRollFactor, threadsPerGroup, maxThreads>         \
 //         <<<grid, block, 0, stream>>>(output, vals, gamma, beta, epsilon, elems_per_row);
 
-#define LAUNCH_FUSED_LN(unRollFactor, threadsPerGroup, maxThreads)             \
+#define _disableLAUNCH_FUSED_LN(unRollFactor, threadsPerGroup, maxThreads)             \
   {                                                                            \
     fused_ln<T, unRollFactor, threadsPerGroup, maxThreads> fn(                 \
         output, vals, gamma, beta, epsilon, elems_per_row);                    \
-    stream.submit([&](sycl::handler &cmd_list) {                                \
+    stream.submit([&](sycl::handler &cmd_list) {                               \
+      cmd_list.parallel_for(sycl::nd_range<2>{grid, block}, fn);               \
+    });                                                                        \
+  }
+
+#define LAUNCH_FUSED_LN(unRollFactor, threadsPerGroup, maxThreads)             \
+  {                                                                            \
+    stream.submit([&](sycl::handler &cmd_list) {                               \
+      sycl::stream out(0x100000, 8192, cmd_list);                              \
+      fused_ln<T, unRollFactor, threadsPerGroup, maxThreads> fn(               \
+          output, vals, gamma, beta, epsilon, elems_per_row, out);             \
       cmd_list.parallel_for(sycl::nd_range<2>{grid, block}, fn);               \
     });                                                                        \
   }
@@ -231,8 +245,8 @@ void launch_fused_ln(T *output, const T *vals, const T *gamma, const T *beta,
 template void launch_fused_ln(sycl::half *, const sycl::half *,
                               const sycl::half *, const sycl::half *, float,
                               int, int, sycl::queue);
-template void launch_fused_ln(bf16 *, const bf16 *, const bf16 *, const bf16 *,
-                              float, int, int, sycl::queue);
+// template void launch_fused_ln(bf16 *, const bf16 *, const bf16 *, const bf16 *,
+//                               float, int, int, sycl::queue);
 template void launch_fused_ln(float *, const float *, const float *,
                               const float *, float, int, int, sycl::queue);
 
