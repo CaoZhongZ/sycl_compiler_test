@@ -75,17 +75,16 @@ public:
 
     T local_buffer[unRoll * T_per_load];
 
-#pragma unroll
+#pragma unroll (unRoll)
     for (int i = 0; i < unRoll; i++) {
       T *iteration_buffer = local_buffer + i * T_per_load;
       T residual_buffer[T_per_load];
       T bias_buffer[T_per_load];
 
       mem_access::load_global<ln::granularity>(
-          iteration_buffer, input_base + i * stride,
-          thread_offset + i * stride < elems_per_row);
+          iteration_buffer, input_base + i * stride, thread_offset + i * stride < elems_per_row);
 
-#pragma unroll
+#pragma unroll (unRoll)
       for (int j = 0; j < T_per_load; j++) {
         float vals_up_cast = conversion::to<float>(iteration_buffer[j]);
         sum = reduce::element<rop::Add>(sum, vals_up_cast);
@@ -97,9 +96,9 @@ public:
 
     float mean_diff = reduce::init<rop::Add, float>();
 
-#pragma unroll
+#pragma unroll (unRoll)
     for (int i = 0; i < unRoll; i++) {
-#pragma unroll
+#pragma unroll (T_per_load)
       for (int j = 0; j < T_per_load; j++) {
         // Using a 0 value here skews the variance, have to if-guard
         if (thread_offset + i * stride < elems_per_row) {
@@ -119,7 +118,7 @@ public:
 
     T *block_output = output + block_offset;
 
-#pragma unroll
+#pragma unroll (unRoll)
     for (int i = 0; i < unRoll; i++) {
       T *iteration_buffer = local_buffer + i * T_per_load;
       const int iter_idx = i * stride + thread_offset;
@@ -132,7 +131,7 @@ public:
       mem_access::load_global<ln::granularity>(beta_local, beta + iter_idx,
                                                do_loads);
 
-#pragma unroll
+#pragma unroll (T_per_load)
       for (int j = 0; j < T_per_load; j++) {
         iteration_buffer[j] =
             (iteration_buffer[j] - mean_compute) * denom_compute;
@@ -310,7 +309,7 @@ public:
     // Unlike a vanilla layernorm, since we're fusing the two adds as well
     // an inner unRoll seems to be less valuable. If anything, a double unRoll
     // makes the most sense if we find we are having performance issues.
-#pragma unroll
+#pragma unroll (unRoll)
     for (int i = 0; i < unRoll; i++) {
       T *iteration_buffer = local_buffer + i * T_per_load;
       T residual_buffer[T_per_load];
@@ -326,7 +325,7 @@ public:
           bias_buffer, bias_base + i * stride,
           thread_offset + i * stride < elems_per_row);
 
-#pragma unroll
+#pragma unroll (unRoll)
       for (int j = 0; j < T_per_load; j++) {
         float vals_up_cast = conversion::to<float>(iteration_buffer[j]);
         float res_up_cast = conversion::to<float>(residual_buffer[j]);
@@ -346,9 +345,9 @@ public:
     const float mean = sum / elems_per_row;
 
     float mean_diff = reduce::init<rop::Add, float>();
-#pragma unroll
+#pragma unroll (unRoll)
     for (int i = 0; i < unRoll; i++) {
-#pragma unroll
+#pragma unroll (T_per_load)
       for (int j = 0; j < T_per_load; j++) {
         // Using a 0 value here skews the variance, have to if-guard
         if (thread_offset + i * stride < elems_per_row) {
@@ -368,7 +367,7 @@ public:
 
     T *block_output = output + block_offset;
 
-#pragma unroll
+#pragma unroll (unRoll)
     for (int i = 0; i < unRoll; i++) {
       T *iteration_buffer = local_buffer + i * T_per_load;
       const int iter_idx = i * stride + thread_offset;
@@ -381,7 +380,7 @@ public:
       mem_access::load_global<ln::granularity>(beta_local, beta + iter_idx,
                                                do_loads);
 
-#pragma unroll
+#pragma unroll (T_per_load)
       for (int j = 0; j < T_per_load; j++) {
         iteration_buffer[j] =
             (iteration_buffer[j] - mean_compute) * denom_compute;
@@ -443,8 +442,8 @@ void launch_fused_residual_ln(T *output, const T *vals, const T *residual,
   /* dim3 block(threadsPerGroup, groups_per_block); */
   /* dim3 grid(groups_launch); */
 
-  sycl::range<2> block{(unsigned long)threadsPerGroup, (size_t)groups_per_block};
-  sycl::range<2> grid{(unsigned long)threadsPerGroup, (size_t)(groups_launch * groups_per_block)};
+  sycl::range<2> block{(size_t)groups_per_block, (size_t)threadsPerGroup};
+  sycl::range<2> grid{(size_t)(groups_launch * groups_per_block), (size_t)threadsPerGroup};
   
   const int elems_per_step = threadsPerGroup * h_per_step;
   const int external_unRoll =
