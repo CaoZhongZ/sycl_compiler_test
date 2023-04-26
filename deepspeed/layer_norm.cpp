@@ -85,8 +85,8 @@ public:
       mem_access::load_global<ln::granularity>(
           iteration_buffer, input_base + i * stride, thread_offset + i * stride < elems_per_row);
 
-      if (pos.get_local_id(1) == 0)
-        out<<'['<<pos.get_group_linear_id()<<"]:\t"<<iteration_buffer[0]<<'\t';
+      if (pos.get_group_linear_id() == 127)
+        out<<'['<<pos.get_local_id(1)<<"]:"<<i * stride<<','<<thread_offset<<"->"<<iteration_buffer[0]<<'\t';
 
 #pragma unroll (unRoll)
       for (int j = 0; j < T_per_load; j++) {
@@ -207,7 +207,7 @@ void launch_fused_ln(T *output, const T *vals, const T *gamma, const T *beta,
   const int groups_launch = (groups_per_block + rows - 1) / groups_per_block;
 
   sycl::range<2> block {(size_t)groups_per_block, (size_t)threadsPerGroup};
-  sycl::range<2> grid {(size_t)(groups_per_block * groups_launch ), (size_t)threadsPerGroup};
+  sycl::range<2> grid {(size_t)groups_per_block, (size_t)(threadsPerGroup * groups_launch)};
 
   const int elems_per_step = threadsPerGroup * h_per_step;
   const int external_unRoll =
@@ -457,7 +457,7 @@ void launch_fused_residual_ln(T *output, const T *vals, const T *residual,
   /* dim3 grid(groups_launch); */
 
   sycl::range<2> block{(size_t)groups_per_block, (size_t)threadsPerGroup};
-  sycl::range<2> grid{(size_t)(groups_launch * groups_per_block), (size_t)threadsPerGroup};
+  sycl::range<2> grid{(size_t)groups_per_block, (size_t)(threadsPerGroup * groups_launch)};
   
   const int elems_per_step = threadsPerGroup * h_per_step;
   const int external_unRoll =

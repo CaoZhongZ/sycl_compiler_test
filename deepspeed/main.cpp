@@ -24,7 +24,7 @@ template <typename T> void fill_array(T* array, T c, size_t n_elem) {
 
 template <typename T> void fill_acc(T* array, T c, size_t n_elem) {
   for (size_t i = 0; i < n_elem; ++ i) {
-    array[i] = c+i;
+    array[i] = c+i/10;
   }
 }
 
@@ -80,7 +80,7 @@ void test_layernorm(int rows, int elems_per_row) {
 
   fill_acc<T>(host_in, T(0.0), elem);
 
-  std::cout<<host_in[512]<<','<<host_in[1024]<<std::endl;
+  std::cout<<host_in[130048]<<','<<host_in[130049]<<std::endl;
 
   q.memcpy(vals, host_in, size);
   q.memset(gamma, T(1.0), row_sz);
