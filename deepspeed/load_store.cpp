@@ -53,26 +53,41 @@ public:
     const int thread_offset = tb.get_local_id(1) * T_per_load;
     const int base_offset = block_offset + thread_offset;
     const int stride = tb.get_local_linear_range() * T_per_load;
-
-    float sum = reduce::init<rop::Add, float>();
+    if (pos.get_group_linear_id() == 127) {
+      out << "<const: > "<< block_offset << " " << thread_offset << " " << base_offset << '\n';
+    }
 
     const T *input_base = vals + base_offset;
 
     T local_buffer[unRoll * T_per_load];
+    T *block_output = output + block_offset;
 
 #pragma unroll (unRoll)
     for (int i = 0; i < unRoll; i++) {
       T *iteration_buffer = local_buffer + i * T_per_load;
-      T residual_buffer[T_per_load];
-      T bias_buffer[T_per_load];
+      
+      const int iter_idx = thread_offset + i * stride;
+      const bool do_loads = iter_idx < elems_per_row;
+
 
       mem_access::load_global<ln::granularity>(
           iteration_buffer, input_base + i * stride, thread_offset + i * stride < elems_per_row);
       
       if (pos.get_group_linear_id() == 127) {
         const T* origin_ = input_base + i * stride;
-        out << "<----> "<< conversion::to<float>(origin_[1]) << " " << " " << conversion::to<float>(iteration_buffer[1]) <<'\n';
+        out << "<load> "<< conversion::to<float>(origin_[1]) << " " << " " << conversion::to<float>(iteration_buffer[1]) <<'\n';
       }
+      
+      if (do_loads) {
+        mem_access::store_global<ln::granularity>(block_output + iter_idx,
+                                                  iteration_buffer);
+      }
+      
+      if (pos.get_group_linear_id() == 127) {
+        const T* origin_ = block_output + iter_idx;
+        out << "<store> "<< conversion::to<float>(origin_[1]) << " " << " " << conversion::to<float>(iteration_buffer[1]) <<'\n';
+      }
+      
     }
     
   };
