@@ -11,7 +11,7 @@
 #include "../runtime.hpp"
 #include "conversion_utils.h"
 #include "softmax.hpp"
-#include "layer_norm.hpp"
+#include "load_store.hpp"
 
 static constexpr int group_size = 16;
 #define MAX_DIMS 32
@@ -62,7 +62,7 @@ void test_softmax(int batch, int heads, int num_seq, int soft_seq) {
 }
 
 template <typename T>
-void test_layernorm(int rows, int elems_per_row) {
+void test_load(int rows, int elems_per_row) {
   auto q = currentQueue();
 
   auto elem = rows * elems_per_row;
@@ -86,7 +86,7 @@ void test_layernorm(int rows, int elems_per_row) {
   q.memset(gamma, T(1.0), row_sz);
   q.memset(beta, T(0.0), row_sz);
 
-  launch_fused_ln(output, vals, gamma, beta, 0.00001, rows, elems_per_row, q);
+  launch_load_func(output, vals, gamma, beta, 0.00001, rows, elems_per_row, q);
 
   q.memcpy(host_o, output, size);
   q.wait();
@@ -122,7 +122,7 @@ int main(int argc, char ** argv) {
   float f_standard = 1.0;
   sycl::half converted_f_standard = conversion::to<sycl::half>(f_standard);
 
-  test_layernorm<sycl::half>(128, 1024);
+  test_load<sycl::half>(128, 1024);
   // test_softmax<sycl::half>(batch_size, heads, num_seq, soft_seq);
   // test_softmax<bf16>(batch_size, heads, num_seq, soft_seq);
 
