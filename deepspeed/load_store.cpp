@@ -53,9 +53,9 @@ public:
     const int thread_offset = tb.get_local_id(1) * T_per_load;
     const int base_offset = block_offset + thread_offset;
     const int stride = tb.get_local_linear_range() * T_per_load;
-    if (pos.get_group_linear_id() == 127) {
-      out << "<const: > "<< block_offset << " " << thread_offset << " " << base_offset << '\n';
-    }
+    // if (pos.get_group_linear_id() == 127) {
+    //   out << "<const: > "<< block_offset << " " << thread_offset << " " << base_offset << '\n';
+    // }
 
     const T *input_base = vals + base_offset;
 
@@ -73,20 +73,20 @@ public:
       mem_access::load_global<ln::granularity>(
           iteration_buffer, input_base + i * stride, thread_offset + i * stride < elems_per_row);
       
-      if (pos.get_group_linear_id() == 127) {
-        const T* origin_ = input_base + i * stride;
-        out << "<load> "<< conversion::to<float>(origin_[1]) << " " << " " << conversion::to<float>(iteration_buffer[1]) <<'\n';
-      }
+      // if (pos.get_group_linear_id() == 127) {
+      //   const T* origin_ = input_base + i * stride;
+      //   out << "<load> "<< conversion::to<float>(origin_[1]) << " " << " " << conversion::to<float>(iteration_buffer[1]) <<'\n';
+      // }
       
       if (do_loads) {
         mem_access::store_global<ln::granularity>(block_output + iter_idx,
                                                   iteration_buffer);
       }
       
-      if (pos.get_group_linear_id() == 127) {
-        const T* origin_ = block_output + iter_idx;
-        out << "<store> "<< conversion::to<float>(origin_[1]) << " " << " " << conversion::to<float>(iteration_buffer[1]) <<'\n';
-      }
+      // if (pos.get_group_linear_id() == 127) {
+      //   const T* origin_ = block_output + iter_idx;
+      //   out << "<store> "<< conversion::to<float>(origin_[1]) << " " << " " << conversion::to<float>(iteration_buffer[1]) <<'\n';
+      // }
       
     }
     

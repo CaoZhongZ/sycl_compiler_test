@@ -1,6 +1,10 @@
 CC=clang
 CXX=clang++
-OPT_FLAGS=-g -gdwarf-4 -ffast-math
+ifeq ($(OPT), 1)
+	OPT_FLAGS=-O3 -ffast-math
+else
+  OPT_FLAGS=-g -gdwarf-4 -ffast-math
+endif
 
 ENABLE_AOT=pvc
 

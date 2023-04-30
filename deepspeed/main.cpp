@@ -24,8 +24,16 @@ template <typename T> void fill_array(T* array, T c, size_t n_elem) {
 
 template <typename T> void fill_acc(T* array, T c, size_t n_elem) {
   for (size_t i = 0; i < n_elem; ++ i) {
-    array[i] = c+i/10;
+    array[i] = c+i/8;
   }
+}
+
+template <typename T> void show_array(T* array, size_t n_elem) {
+  std::cout<<"array "<<array<<':'<<std::endl;
+  for (size_t i = 0; i < 32; ++i) {
+    std::cout<<array[i]<<',';
+  }
+  std::cout<<std::endl;
 }
 
 
@@ -91,6 +99,8 @@ void test_load(int rows, int elems_per_row) {
   q.memcpy(host_o, output, size);
   q.wait();
 
+  show_array(host_in, size);
+  show_array(host_o, size);
   sycl::free(vals, q);
   sycl::free(output, q);
   sycl::free(gamma, q);
