@@ -34,13 +34,13 @@ class load_func {
   const T *beta;
   float epsilon;
   int elems_per_row;
-  sycl::stream out;
+  // sycl::stream out;
 
 public:
   load_func(T *output, const T *vals, const T *gamma, const T *beta,
            float epsilon, int elems_per_row, sycl::stream out)
       : output(output), vals(vals), gamma(gamma), beta(beta), epsilon(epsilon),
-        elems_per_row(elems_per_row), out(out) {};
+        elems_per_row(elems_per_row)/*, out(out)*/ {};
 
   void operator()(sycl::nd_item<2> pos) const {
     constexpr int T_per_load = ln::granularity / sizeof(T);
@@ -93,7 +93,7 @@ public:
   };
 };
 
-#define _disableLAUNCH_LOAD_FUNC(unRollFactor, threadsPerGroup, maxThreads)             \
+#define LAUNCH_LOAD_FUNC(unRollFactor, threadsPerGroup, maxThreads)             \
   {                                                                            \
     load_func<T, unRollFactor, threadsPerGroup, maxThreads> fn(                 \
         output, vals, gamma, beta, epsilon, elems_per_row);                    \
@@ -102,7 +102,7 @@ public:
     });                                                                        \
   }
 
-#define LAUNCH_LOAD_FUNC(unRollFactor, threadsPerGroup, maxThreads)             \
+#define _disableLAUNCH_LOAD_FUNC(unRollFactor, threadsPerGroup, maxThreads)             \
   {                                                                            \
     stream.submit([&](sycl::handler &cmd_list) {                               \
       sycl::stream out(0x100000, 8192, cmd_list);                              \
