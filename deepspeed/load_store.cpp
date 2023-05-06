@@ -38,7 +38,7 @@ class load_func {
 
 public:
   load_func(T *output, const T *vals, const T *gamma, const T *beta,
-           float epsilon, int elems_per_row, sycl::stream out)
+           float epsilon, int elems_per_row/*, sycl::stream out*/)
       : output(output), vals(vals), gamma(gamma), beta(beta), epsilon(epsilon),
         elems_per_row(elems_per_row)/*, out(out)*/ {};
 

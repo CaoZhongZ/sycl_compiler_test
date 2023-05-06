@@ -89,8 +89,8 @@ public:
 //         iteration_buffer[j] = input_base[i * stride + j];
 //       }
 
-      if (pos.get_group_linear_id() == 1)
-        out<<'['<<pos.get_local_id(1)<<"]:"<<i * stride<<','<<thread_offset<<"->"<<iteration_buffer[0]<<'\t'<<iteration_buffer[1]<<'\t'<<iteration_buffer[2]<<'\t';
+//      if (pos.get_group_linear_id() == 1)
+//        out<<'['<<pos.get_local_id(1)<<"]:"<<i * stride<<','<<thread_offset<<"->"<<iteration_buffer[0]<<'\t'<<iteration_buffer[1]<<'\t'<<iteration_buffer[2]<<'\t';
 
 #pragma unroll (unRoll)
       for (int j = 0; j < T_per_load; j++) {

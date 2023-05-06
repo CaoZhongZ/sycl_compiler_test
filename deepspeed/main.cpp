@@ -11,7 +11,7 @@
 #include "../runtime.hpp"
 #include "conversion_utils.h"
 #include "softmax.hpp"
-#include "load_store.hpp"
+#include "layer_norm.hpp"
 
 static constexpr int group_size = 16;
 #define MAX_DIMS 32
@@ -28,12 +28,25 @@ template <typename T> void fill_acc(T* array, T c, size_t n_elem) {
   }
 }
 
-template <typename T> void show_array(T* array, size_t n_elem) {
-  std::cout<<"array "<<array<<':'<<std::endl;
-  for (size_t i = 0; i < 32; ++i) {
+template <typename T> void show_line(T* array, size_t n_elem) {
+  for (size_t i = 0; i < 4; ++i) {
+    std::cout<<array[i]<<',';
+  }
+  std::cout<<", ..., ";
+  for (size_t i = n_elem - 4; i < n_elem; ++i) {
     std::cout<<array[i]<<',';
   }
   std::cout<<std::endl;
+}
+
+template <typename T> void show_2d_array(T * array, size_t n_row, size_t n_col) {
+  for (size_t i = 0; i < 4; ++i) {
+    show_line(array + i * n_col, n_col);
+  }
+  std::cout<<"... ..."<<std::endl;;
+  for (size_t i = n_row - 4; i < n_row; ++i) {
+    show_line(array + i * n_col, n_col);
+  }
 }
 
 
@@ -99,8 +112,8 @@ void test_load(int rows, int elems_per_row) {
   q.memcpy(host_o, output, size);
   q.wait();
 
-  show_array(host_in, size);
-  show_array(host_o, size);
+  show_line(host_in, size);
+  show_line(host_o, size);
   sycl::free(vals, q);
   sycl::free(output, q);
   sycl::free(gamma, q);
@@ -109,6 +122,43 @@ void test_load(int rows, int elems_per_row) {
   sycl::free(host_o, q);
 }
 
+template <typename T>
+void test_ln(int rows, int elems_per_row) {
+  auto q = currentQueue();
+
+  auto elem = rows * elems_per_row;
+  auto size = elem * sizeof(T);
+  auto row_sz = elems_per_row * sizeof(T);
+
+  auto* vals = (T *)sycl::malloc_device(size, q);
+  auto* output = (T *)sycl::malloc_device(size, q);
+
+  auto* gamma = (T *)sycl::malloc_device(row_sz, q);
+  auto* beta = (T *)sycl::malloc_device(row_sz, q);
+
+  auto* host_in = (T *)sycl::malloc_host(size, q);
+  auto* host_o = (T *)sycl::malloc_host(size, q);
+
+  fill_acc<T>(host_in, T(0.0), elem);
+
+  q.memcpy(vals, host_in, size);
+  q.memset(gamma, T(1.0), row_sz);
+  q.memset(beta, T(0.0), row_sz);
+
+  launch_fused_ln(output, vals, gamma, beta, 0.00001, rows, elems_per_row, q);
+
+  q.memcpy(host_o, output, size);
+  q.wait();
+
+  show_2d_array(host_in, rows, elems_per_row);
+  show_2d_array(host_o, rows, elems_per_row);
+  sycl::free(vals, q);
+  sycl::free(output, q);
+  sycl::free(gamma, q);
+  sycl::free(beta, q);
+  sycl::free(host_in, q);
+  sycl::free(host_o, q);
+}
 
 template <typename T, typename F>
 T test_conversion(F val) {
@@ -132,9 +182,10 @@ int main(int argc, char ** argv) {
   float f_standard = 1.0;
   sycl::half converted_f_standard = conversion::to<sycl::half>(f_standard);
 
-  test_load<sycl::half>(128, 1024);
+  // test_load<sycl::half>(128, 1024);
   // test_softmax<sycl::half>(batch_size, heads, num_seq, soft_seq);
   // test_softmax<bf16>(batch_size, heads, num_seq, soft_seq);
+  test_ln<sycl::half>(128, 1024);
 
   return 0;
 }
