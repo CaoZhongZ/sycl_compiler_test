@@ -84,13 +84,6 @@ public:
 
       mem_access::load_global<ln::granularity>(
           iteration_buffer, input_base + i * stride, thread_offset + i * stride < elems_per_row);
-// #pragma unroll (8)
-//       for (int j = 0; j < 8; ++ j) {
-//         iteration_buffer[j] = input_base[i * stride + j];
-//       }
-
-//      if (pos.get_group_linear_id() == 1)
-//        out<<'['<<pos.get_local_id(1)<<"]:"<<i * stride<<','<<thread_offset<<"->"<<iteration_buffer[0]<<'\t'<<iteration_buffer[1]<<'\t'<<iteration_buffer[2]<<'\t';
 
 #pragma unroll (unRoll)
       for (int j = 0; j < T_per_load; j++) {
@@ -110,8 +103,7 @@ public:
       for (int j = 0; j < T_per_load; j++) {
         // Using a 0 value here skews the variance, have to if-guard
         if (thread_offset + i * stride < elems_per_row) {
-          float diff =
-              (conversion::to<float>(local_buffer[i * T_per_load + j]) - mean);
+          float diff = (conversion::to<float>(local_buffer[i * T_per_load + j]) - mean);
           mean_diff = reduce::element<rop::Add>(mean_diff, diff * diff);
         }
       }
@@ -119,7 +111,7 @@ public:
 
     reduce::partitioned_block<rop::Add, threadsPerGroup>(tb, warp, mean_diff);
     const float variance = mean_diff / elems_per_row;
-    const float denom = rsqrt(variance + epsilon);
+    const float denom = sycl::rsqrt(variance + epsilon);
 
     const T mean_compute = conversion::to<T>(mean);
     const T denom_compute = conversion::to<T>(denom);
@@ -134,22 +126,17 @@ public:
 
       T gamma_local[T_per_load], beta_local[T_per_load];
 
-      mem_access::load_global<ln::granularity>(gamma_local, gamma + iter_idx,
-                                               do_loads);
-      mem_access::load_global<ln::granularity>(beta_local, beta + iter_idx,
-                                               do_loads);
+      mem_access::load_global<ln::granularity>(gamma_local, gamma + iter_idx, do_loads);
+      mem_access::load_global<ln::granularity>(beta_local, beta + iter_idx, do_loads);
 
 #pragma unroll (T_per_load)
       for (int j = 0; j < T_per_load; j++) {
-        iteration_buffer[j] =
-            (iteration_buffer[j] - mean_compute) * denom_compute;
-        iteration_buffer[j] =
-            iteration_buffer[j] * gamma_local[j] + beta_local[j];
+        iteration_buffer[j] = (iteration_buffer[j] - mean_compute) * denom_compute;
+        iteration_buffer[j] = iteration_buffer[j] * gamma_local[j] + beta_local[j];
       }
 
       if (do_loads) {
-        mem_access::store_global<ln::granularity>(block_output + iter_idx,
-                                                  iteration_buffer);
+        mem_access::store_global<ln::granularity>(block_output + iter_idx, iteration_buffer);
       }
     }
   };
@@ -334,14 +321,12 @@ public:
       T bias_buffer[T_per_load];
 
       mem_access::load_global<ln::granularity>(
-          iteration_buffer, input_base + i * stride,
-          thread_offset + i * stride < elems_per_row);
+          iteration_buffer, input_base + i * stride, thread_offset + i * stride < elems_per_row);
+      mem_access::load_global<ln::granularity>(residual_buffer,
+                                               residual_base + i * stride,
+                                               thread_offset + i * stride < elems_per_row);
       mem_access::load_global<ln::granularity>(
-          residual_buffer, residual_base + i * stride,
-          thread_offset + i * stride < elems_per_row);
-      mem_access::load_global<ln::granularity>(
-          bias_buffer, bias_base + i * stride,
-          thread_offset + i * stride < elems_per_row);
+          bias_buffer, bias_base + i * stride, thread_offset + i * stride < elems_per_row);
 
 #pragma unroll (unRoll)
       for (int j = 0; j < T_per_load; j++) {
@@ -354,8 +339,8 @@ public:
       }
 
       if (preLnResidual && (thread_offset + i * stride < elems_per_row)) {
-        mem_access::store_global<ln::granularity>(
-            res_output + base_offset + i * stride, iteration_buffer);
+        mem_access::store_global<ln::granularity>(res_output + base_offset + i * stride,
+                                                  iteration_buffer);
       }
     }
 
@@ -378,7 +363,7 @@ public:
 
     reduce::partitioned_block<rop::Add, threadsPerGroup>(tb, warp, mean_diff);
     const float variance = mean_diff / elems_per_row;
-    const float denom = rsqrt(variance + epsilon);
+    const float denom = sycl::rsqrt(variance + epsilon);
 
     const T mean_compute = conversion::to<T>(mean);
     const T denom_compute = conversion::to<T>(denom);
@@ -393,22 +378,17 @@ public:
 
       T gamma_local[T_per_load], beta_local[T_per_load];
 
-      mem_access::load_global<ln::granularity>(gamma_local, gamma + iter_idx,
-                                               do_loads);
-      mem_access::load_global<ln::granularity>(beta_local, beta + iter_idx,
-                                               do_loads);
+      mem_access::load_global<ln::granularity>(gamma_local, gamma + iter_idx, do_loads);
+      mem_access::load_global<ln::granularity>(beta_local, beta + iter_idx, do_loads);
 
 #pragma unroll (T_per_load)
       for (int j = 0; j < T_per_load; j++) {
-        iteration_buffer[j] =
-            (iteration_buffer[j] - mean_compute) * denom_compute;
-        iteration_buffer[j] =
-            iteration_buffer[j] * gamma_local[j] + beta_local[j];
+        iteration_buffer[j] = (iteration_buffer[j] - mean_compute) * denom_compute;
+        iteration_buffer[j] = iteration_buffer[j] * gamma_local[j] + beta_local[j];
       }
 
       if (do_loads) {
-        mem_access::store_global<ln::granularity>(block_output + iter_idx,
-                                                  iteration_buffer);
+        mem_access::store_global<ln::granularity>(block_output + iter_idx, iteration_buffer);
       }
     }
   };
