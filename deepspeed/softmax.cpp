@@ -592,7 +592,7 @@ template void launch_attn_softmax_v2(bf16 *vals, bf16 *mask, bf16 *alibi,
                                      int head_offset, int mask_stride,
                                      int mp_size, sycl::queue);
 
-template void launch_attn_softmax_v2(half *vals, half *mask, half *alibi,
+template void launch_attn_softmax_v2(sycl::half *vals, sycl::half *mask, sycl::half *alibi,
                                      float layer_scale, bool triangular,
                                      bool recompute, bool local_attention,
                                      int window_size, int batch_size, int heads,
@@ -600,6 +600,6 @@ template void launch_attn_softmax_v2(half *vals, half *mask, half *alibi,
                                      int head_offset, int mask_stride,
                                      int mp_size, sycl::queue);
 
-template class attn_softmax_v2<half>;
+template class attn_softmax_v2<sycl::half>;
 
 template class attn_softmax_v2<bf16>;

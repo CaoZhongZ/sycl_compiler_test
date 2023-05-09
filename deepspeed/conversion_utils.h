@@ -143,9 +143,9 @@ inline float2 to(bf162 val)
 #ifdef BF16_AVAILABLE
 // No direct conversion
 template <>
-inline half to(bf16 val)
+inline sycl::half to(bf16 val)
 {
-    return to<half>(to<float>(val));
+    return to<sycl::half>(to<float>(val));
 }
 #endif
 
@@ -153,14 +153,14 @@ inline half to(bf16 val)
 template <>
 inline half2 to(float2 val)
 {
-    return val.convert<half, rounding_mode::rtn>();
+    return val.convert<sycl::half, sycl::rounding_mode::rtn>();
 }
 template <>
 inline half2 to(float val)
 {
     half2 tmp;
-    tmp[0] = to<half>(val);
-    tmp[1] = to<half>(val);
+    tmp[0] = to<sycl::half>(val);
+    tmp[1] = to<sycl::half>(val);
     return tmp;
 }
 
@@ -223,7 +223,7 @@ inline int64_t to(float val)
 }
 #endif
 template <>
-inline int64_t to(half val)
+inline int64_t to(sycl::half val)
 {
     return to<int64_t>(to<float>(val));
 }
@@ -252,7 +252,7 @@ inline int32_t to(float val)
 }
 #endif
 template <>
-inline int32_t to(half val)
+inline int32_t to(sycl::half val)
 {
     return to<int32_t>(to<float>(val));
 }
@@ -281,7 +281,7 @@ inline int16_t to(float val)
 }
 #endif
 template <>
-inline int16_t to(half val)
+inline int16_t to(sycl::half val)
 {
     return to<int16_t>(to<float>(val));
 }
@@ -310,7 +310,7 @@ inline int8_t to(float val)
 }
 #endif
 template <>
-inline int8_t to(half val)
+inline int8_t to(sycl::half val)
 {
     return to<int8_t>(to<float>(val));
 }
@@ -339,7 +339,7 @@ inline uint64_t to(float val)
 }
 #endif
 template <>
-inline uint64_t to(half val)
+inline uint64_t to(sycl::half val)
 {
     return to<uint64_t>(to<float>(val));
 }
@@ -368,7 +368,7 @@ inline uint32_t to(float val)
 }
 #endif
 template <>
-inline uint32_t to(half val)
+inline uint32_t to(sycl::half val)
 {
     return to<uint32_t>(to<float>(val));
 }
@@ -397,7 +397,7 @@ inline uint16_t to(float val)
 }
 #endif
 template <>
-inline uint16_t to(half val)
+inline uint16_t to(sycl::half val)
 {
     return to<uint16_t>(to<float>(val));
 }
@@ -426,7 +426,7 @@ inline uint8_t to(float val)
 }
 #endif
 template <>
-inline uint8_t to(half val)
+inline uint8_t to(sycl::half val)
 {
     return to<uint8_t>(to<float>(val));
 }
