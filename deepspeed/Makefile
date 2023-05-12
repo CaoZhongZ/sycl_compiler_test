@@ -32,7 +32,7 @@ endif
 
 V=-v
 CXXFLAGS=-std=c++17 $(OPT_FLAGS) -Wall -Wno-deprecated-declarations -Wno-unused-variable
-SYCLFLAGS=-fsycl -fsycl-id-queries-fit-in-int -fsycl-default-sub-group-size=32 -D__SYCL_INTERNAL_API -fsycl-targets=$(TARGET)
+SYCLFLAGS=-fsycl -fno-sycl-id-queries-fit-in-int -fsycl-default-sub-group-size=32 -D__SYCL_INTERNAL_API -fsycl-targets=$(TARGET)
 LINKFLAGS=$(OPT_FLAGS) -fsycl -fsycl-max-parallel-link-jobs=8 -fsycl-targets=$(TARGET) $(LINKTARGET)
 
 .PRECIOUS : %.host.o %.dev.bc %.footer.hpp

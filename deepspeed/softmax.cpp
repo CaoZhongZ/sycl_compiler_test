@@ -65,7 +65,7 @@ public:
      */
 
     auto b = sycl::ext::oneapi::experimental::this_group<1>();
-    auto g = sycl::ext::oneapi::this_sub_group();
+    auto g = sycl::ext::oneapi::experimental::this_sub_group();
     auto pos = sycl::ext::oneapi::experimental::this_nd_item<1>();
 
     float2 low_data[MAX_REG_SIZE];
@@ -340,7 +340,7 @@ public:
      */
 
     auto b = sycl::ext::oneapi::experimental::this_group<1>();
-    auto g = sycl::ext::oneapi::this_sub_group();
+    auto g = sycl::ext::oneapi::experimental::this_sub_group();
     auto pos = sycl::ext::oneapi::experimental::this_nd_item<1>();
 
     float4 data[MAX_REG_SIZE];
