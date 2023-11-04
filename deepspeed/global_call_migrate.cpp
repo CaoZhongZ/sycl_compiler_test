@@ -102,7 +102,7 @@ int main() {
   } else {
     auto capture = multi_tensor_apply_kernel(
          chunk_size, noop_flag.DATA_PTR<int>(), tl, callable, args...);
-    sycl::buffer params(const_cast<const decltype(capture) *>(&capture, sycl::range<1>(1)));
+    sycl::buffer params(const_cast<const decltype(capture) *>(&capture), sycl::range<1>(1));
 
     stream.submit([&] (sycl::handler &cgh) {
       auto device_params = params.template get_access<
