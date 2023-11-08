@@ -88,6 +88,9 @@ small : small.o
 accessor : accessor.o
 	$(CXX) $(V) $(LINKFLAGS) -o$@ $^
 
+copy_assembly : copy_assembly.o
+	$(CXX) $(V) $(LINKFLAGS) -o$@ $^
+
 all : main small accessor
 
 onepass.o : main.cpp
@@ -97,4 +100,4 @@ onepass : onepass.o
 	$(CXX) $(V) $(LINKFLAGS) -o $@ $<
 
 clean :
-	rm -f small main accessor *.o *.header.hpp *.footer.hpp *.bc onepass
+	rm -f small main accessor *.o *.header.hpp *.footer.hpp *.bc onepass ./tmp/*

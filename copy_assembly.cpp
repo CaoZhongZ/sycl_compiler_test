@@ -44,7 +44,13 @@ struct asm_copy {
 #if defined(__SYCL_DEVICE_ONLY__)
         T tmp;
 
-        asm volatile ("lsc_load.ugm (M1, 16) %0:f32x4 flat[%1]:a64\n" : "=rw"(tmp) : "rw"(src + off + i * grp_sz));
+        if constexpr (sizeof(T) == 4) {
+          asm volatile ("lsc_load.ugm (M1, 16) %0:u32 flat[%1]:a64\n" : "=rw"(tmp) : "rw"(src + off + i * grp_sz));
+        } else if constexpr (sizeof(T) == 8) {
+          asm volatile ("lsc_load.ugm (M1, 16) %0:u32x2 flat[%1]:a64\n" : "=rw"(tmp) : "rw"(src + off + i * grp_sz));
+        } else if constexpr (sizeof(T) == 16) {
+          asm volatile ("lsc_load.ugm (M1, 16) %0:u32x4 flat[%1]:a64\n" : "=rw"(tmp) : "rw"(src + off + i * grp_sz));
+        }
 #else
         if (off + i * grp_sz < elems)
           dst[off + i * grp_sz] = src[off + i * grp_sz];
