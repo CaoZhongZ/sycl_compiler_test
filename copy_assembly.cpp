@@ -45,11 +45,11 @@ struct asm_copy {
         T tmp;
 
         if constexpr (sizeof(T) == 4) {
-          asm volatile ("lsc_load.ugm (M1, 16) %0:u32 flat[%1]:a64\n" : "=rw"(tmp) : "rw"(src + off + i * grp_sz));
+          asm volatile ("lsc_load.ugm (M1, 16) %0:d32 flat[%1]:a64\n" : "=rw"(tmp) : "rw"(src + off + i * grp_sz));
         } else if constexpr (sizeof(T) == 8) {
-          asm volatile ("lsc_load.ugm (M1, 16) %0:u32x2 flat[%1]:a64\n" : "=rw"(tmp) : "rw"(src + off + i * grp_sz));
+          asm volatile ("lsc_load.ugm (M1, 16) %0:d32x2 flat[%1]:a64\n" : "=rw"(tmp) : "rw"(src + off + i * grp_sz));
         } else if constexpr (sizeof(T) == 16) {
-          asm volatile ("lsc_load.ugm (M1, 16) %0:u32x4 flat[%1]:a64\n" : "=rw"(tmp) : "rw"(src + off + i * grp_sz));
+          asm volatile ("lsc_load.ugm (M1, 16) %0:d32x4 flat[%1]:a64\n" : "=rw"(tmp) : "rw"(src + off + i * grp_sz));
         }
 #else
         if (off + i * grp_sz < elems)
