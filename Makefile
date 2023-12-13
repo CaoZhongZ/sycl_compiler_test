@@ -1,6 +1,6 @@
 CC=clang
 CXX=clang++
-OPT_FLAGS=-O3 -ffast-math
+OPT_FLAGS=-g -O3 -ffast-math
 
 ENABLE_AOT=pvc
 
@@ -90,7 +90,7 @@ small : small.o
 accessor : accessor.o
 	$(CXX) $(V) $(LINKFLAGS) -o$@ $^
 
-copy_assembly : copy_assembly.o
+copy_assembly : copy_assembly.o sycl_misc.o
 	$(CXX) $(V) $(LINKFLAGS) -o$@ $^
 
 all : main small accessor

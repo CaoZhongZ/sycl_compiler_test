@@ -49,7 +49,8 @@ struct asm_copy {
         } else if constexpr (sizeof(T) == 8) {
           asm volatile ("lsc_load.ugm (M1, 16) %0:d32x2 flat[%1]:a64\n" : "=rw"(tmp) : "rw"(src + off + i * grp_sz));
         } else if constexpr (sizeof(T) == 16) {
-          asm volatile ("lsc_load.ugm (M1, 16) %0:d32x4 flat[%1]:a64\n" : "=rw"(tmp) : "rw"(src + off + i * grp_sz));
+          auto tmp1 = static_cast<typename T::vector_t>(tmp);
+          asm volatile ("lsc_load.ugm (M1, 16) %0:d32x4 flat[%1]:a64\n" : "=rw"(tmp1) : "rw"(src + off + i * grp_sz));
         }
 #else
         if (off + i * grp_sz < elems)
@@ -345,5 +346,5 @@ int main(int argc, char *argv[]) {
   queue.wait();
 
   if (memcmp(b_check, b_host, alloc_size) == 0)
-    printf("Verified\n");
+  printf("Verified\n");
 }
