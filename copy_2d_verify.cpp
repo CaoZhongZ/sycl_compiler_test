@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
     void operator () [[sycl::reqd_sub_group_size(16)]] (sycl::id<1> i) const {
 #if defined(__SYCL_DEVICE_ONLY__)
       float array_2d[8];
+      float array_22d[8];
       auto* SurfaceBase = src + i;
       int SurfaceWidth = 16;
       int SurfaceHeight = 8;
@@ -90,6 +91,10 @@ int main(int argc, char *argv[]) {
       asm volatile ("\n"
           "lsc_load_block2d.ugm (M1, 1) %0:d32.1x8x16nn flat[%1, %2, %3, %4, %5, %6]\n"
           ::"rw"(array_2d), "rw"(SurfaceBase), "rw"(SurfaceWidth), "rw"(SurfaceHeight),
+          "rw"(SurfacePitch), "rw"(Src0AddrX), "rw"(Src0AddrY));
+      asm volatile ("\n"
+          "lsc_load_block2d.ugm (M1, 1) %0:d32.1x8x16nn flat[%1, %2, %3, %4, %5, %6]\n"
+          ::"rw"(array_22d), "rw"(SurfaceBase), "rw"(SurfaceWidth), "rw"(SurfaceHeight),
           "rw"(SurfacePitch), "rw"(Src0AddrX), "rw"(Src0AddrY));
 #else
       dst[i] = src[i];
